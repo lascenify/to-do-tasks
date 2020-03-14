@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/navigation_graph"
+    app:startDestination="@id/taskListFragment">
+
+    <fragment
+        android:id="@+id/addTaskFragment"
+        android:name="com.lascenify.todoapp.ui.AddTaskFragment"
+        android:label="AddTaskFragment" />
+    <fragment
+        android:id="@+id/taskListFragment"
+        android:name="com.lascenify.todoapp.ui.TaskListFragment"
+        android:label="TaskListFragment" />
+</navigation>
