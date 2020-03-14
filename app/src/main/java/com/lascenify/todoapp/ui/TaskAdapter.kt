@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.lascenify.todoapp.R
-import com.lascenify.todoapp.model.TaskEntry
+import com.lascenify.todoapp.data.TaskEntry
 import java.text.SimpleDateFormat
 import java.util.*
 
