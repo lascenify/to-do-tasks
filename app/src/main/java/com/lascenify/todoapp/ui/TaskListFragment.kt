@@ -86,6 +86,8 @@ class TaskListFragment :Fragment(), TaskAdapter.ItemClickListener{
     }
 
     override fun onItemClickListener(itemId: Int) {
-        findNavController().navigate(R.id.addTaskFragment)
+        val bundle = Bundle()
+        bundle.putInt(getString(R.string.EXTRA_TASK_ID), itemId)
+        findNavController().navigate(R.id.addTaskFragment, bundle)
     }
 }

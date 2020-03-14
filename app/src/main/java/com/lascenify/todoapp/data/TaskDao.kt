@@ -1,4 +1,4 @@
-package com.lascenify.todoapp.model
+package com.lascenify.todoapp.data
 
 import androidx.room.*
 
@@ -15,4 +15,7 @@ interface TaskDao {
 
     @Delete
     fun deleteTask(taskEntry: TaskEntry)
+
+    @Query ("SELECT * FROM task WHERE id = :id")
+    fun loadTaskById(id:Int):TaskEntry?
 }
