@@ -10,12 +10,15 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.lascenify.todoapp.R
 import com.lascenify.todoapp.R.string.EXTRA_TASK_ID
 import com.lascenify.todoapp.data.AppDatabase
 import com.lascenify.todoapp.data.TaskEntry
 import com.lascenify.todoapp.net.AppExecutors
+import com.lascenify.todoapp.viewmodel.AddTaskViewModel
+import com.lascenify.todoapp.viewmodel.AddTaskViewModelFactory
 import kotlinx.android.synthetic.main.add_task_fragment.*
 import java.util.*
 
@@ -61,11 +64,13 @@ class AddTaskFragment :Fragment(){
             mButton.text = "Update"
             if (mTaskId == DEFAULT_TASK_ID){
                 mTaskId = taskIdFromTaskList
-                val task = mDatabase.taskDao()?.loadTaskById(mTaskId)
-                task?.observe(this.viewLifecycleOwner, object :Observer<TaskEntry?>{
-                    override fun onChanged(t: TaskEntry?) {
-                        task.removeObserver(this)
-                        populateUI(task.value)
+
+                val viewModelFactory = AddTaskViewModelFactory(mDatabase,mTaskId)
+                val viewModel = ViewModelProviders.of(this, viewModelFactory).get(AddTaskViewModel::class.java)
+                viewModel.task.observe(this.viewLifecycleOwner, object : Observer<TaskEntry?>{
+                    override fun onChanged(taskEntry: TaskEntry?) {
+                        viewModel.task.removeObserver(this)
+                        populateUI(taskEntry)
                     }
                 })
             }

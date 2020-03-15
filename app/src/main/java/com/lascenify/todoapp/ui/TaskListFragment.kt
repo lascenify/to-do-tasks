@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
@@ -18,6 +19,7 @@ import com.lascenify.todoapp.R
 import com.lascenify.todoapp.data.AppDatabase
 import com.lascenify.todoapp.data.TaskEntry
 import com.lascenify.todoapp.net.AppExecutors
+import com.lascenify.todoapp.viewmodel.TaskViewModel
 import kotlinx.android.synthetic.main.task_list_fragment.*
 
 class TaskListFragment :Fragment(), TaskAdapter.ItemClickListener{
@@ -51,7 +53,7 @@ class TaskListFragment :Fragment(), TaskAdapter.ItemClickListener{
         val decoration = DividerItemDecoration(context, VERTICAL)
         mRecyclerView.addItemDecoration(decoration)
         setListeners()
-        retrieveTasks()
+        setUpViewModel()
 
     }
 
@@ -78,16 +80,12 @@ class TaskListFragment :Fragment(), TaskAdapter.ItemClickListener{
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
 
-    private fun retrieveTasks() {
-        val tasks = mDatabase.taskDao()?.loadAllTasks()!!
-        val observer = Observer<List<TaskEntry>?>(){
-            mAdapter.setTasks(tasks.value)
-        }
-        tasks.observe(this.viewLifecycleOwner,observer)
+    private fun setUpViewModel() {
+        val viewModel = ViewModelProviders.of(this).get(TaskViewModel::class.java)
+        viewModel.tasks.observe(this.viewLifecycleOwner, Observer {
+            mAdapter.setTasks(it)
+        })
 
     }
 
