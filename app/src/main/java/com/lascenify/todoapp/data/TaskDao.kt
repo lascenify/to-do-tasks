@@ -1,11 +1,12 @@
 package com.lascenify.todoapp.data
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 
 @Dao
 interface TaskDao {
     @Query("SELECT * FROM task ORDER BY priority")
-    fun loadAllTasks(): List<TaskEntry>?
+    fun loadAllTasks(): LiveData<List<TaskEntry>?>
 
     @Insert
     fun insertTask(taskEntry: TaskEntry)
@@ -17,5 +18,5 @@ interface TaskDao {
     fun deleteTask(taskEntry: TaskEntry)
 
     @Query ("SELECT * FROM task WHERE id = :id")
-    fun loadTaskById(id:Int):TaskEntry?
+    fun loadTaskById(id:Int):LiveData<TaskEntry?>
 }

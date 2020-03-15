@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
@@ -15,6 +16,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lascenify.todoapp.MainActivity
 import com.lascenify.todoapp.R
 import com.lascenify.todoapp.data.AppDatabase
+import com.lascenify.todoapp.data.TaskEntry
 import com.lascenify.todoapp.net.AppExecutors
 import kotlinx.android.synthetic.main.task_list_fragment.*
 
@@ -38,6 +40,7 @@ class TaskListFragment :Fragment(), TaskAdapter.ItemClickListener{
         return rootView
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mDatabase = AppDatabase.getInstance(context!!)!!
@@ -48,6 +51,7 @@ class TaskListFragment :Fragment(), TaskAdapter.ItemClickListener{
         val decoration = DividerItemDecoration(context, VERTICAL)
         mRecyclerView.addItemDecoration(decoration)
         setListeners()
+        retrieveTasks()
 
     }
 
@@ -65,7 +69,6 @@ class TaskListFragment :Fragment(), TaskAdapter.ItemClickListener{
                     val position = viewHolder.adapterPosition
                     val task = mAdapter.getTasks()?.get(position)!!
                     mDatabase.taskDao()?.deleteTask(task)
-                    retrieveTasks()
                 }
             }
         }).attachToRecyclerView(recyclerViewTasks)
@@ -77,12 +80,15 @@ class TaskListFragment :Fragment(), TaskAdapter.ItemClickListener{
 
     override fun onResume() {
         super.onResume()
-        AppExecutors.instance?.diskIO()!!.execute { retrieveTasks() }
     }
 
     private fun retrieveTasks() {
         val tasks = mDatabase.taskDao()?.loadAllTasks()!!
-        activity?.runOnUiThread { mAdapter.setTasks(tasks) }
+        val observer = Observer<List<TaskEntry>?>(){
+            mAdapter.setTasks(tasks.value)
+        }
+        tasks.observe(this.viewLifecycleOwner,observer)
+
     }
 
     override fun onItemClickListener(itemId: Int) {

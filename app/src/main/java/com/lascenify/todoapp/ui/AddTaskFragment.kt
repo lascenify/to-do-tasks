@@ -9,6 +9,7 @@ import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.lascenify.todoapp.R
 import com.lascenify.todoapp.R.string.EXTRA_TASK_ID
@@ -60,10 +61,13 @@ class AddTaskFragment :Fragment(){
             mButton.text = "Update"
             if (mTaskId == DEFAULT_TASK_ID){
                 mTaskId = taskIdFromTaskList
-                AppExecutors.instance?.diskIO()?.execute {
-                    val task = mDatabase.taskDao()?.loadTaskById(mTaskId)
-                    activity?.runOnUiThread{populateUI(task)}
-                }
+                val task = mDatabase.taskDao()?.loadTaskById(mTaskId)
+                task?.observe(this.viewLifecycleOwner, object :Observer<TaskEntry?>{
+                    override fun onChanged(t: TaskEntry?) {
+                        task.removeObserver(this)
+                        populateUI(task.value)
+                    }
+                })
             }
         }
 
