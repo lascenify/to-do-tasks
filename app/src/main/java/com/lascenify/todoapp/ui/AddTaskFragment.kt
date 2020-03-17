@@ -9,12 +9,16 @@ import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.lascenify.todoapp.R
 import com.lascenify.todoapp.R.string.EXTRA_TASK_ID
 import com.lascenify.todoapp.data.AppDatabase
-import com.lascenify.todoapp.model.TaskEntry
+import com.lascenify.todoapp.data.TaskEntry
 import com.lascenify.todoapp.net.AppExecutors
+import com.lascenify.todoapp.viewmodel.AddTaskViewModel
+import com.lascenify.todoapp.viewmodel.AddTaskViewModelFactory
 import kotlinx.android.synthetic.main.add_task_fragment.*
 import java.util.*
 
@@ -55,13 +59,20 @@ class AddTaskFragment :Fragment(){
             mTaskId = savedInstanceState.getInt(getString(R.string.INSTANCE_TASK_ID), DEFAULT_TASK_ID)
         }
 
-
-        if (arguments != null){
-            val taskId = arguments!!.getInt(getString(EXTRA_TASK_ID))
+        val taskIdFromTaskList = arguments?.getInt(getString(EXTRA_TASK_ID))
+        if (arguments != null && taskIdFromTaskList != null){
             mButton.text = "Update"
-            if (taskId == DEFAULT_TASK_ID){
-                val task = mDatabase.taskDao()?.loadAllTasks()?.get(taskId)
-                populateUI(task!!)
+            if (mTaskId == DEFAULT_TASK_ID){
+                mTaskId = taskIdFromTaskList
+
+                val viewModelFactory = AddTaskViewModelFactory(mDatabase,mTaskId)
+                val viewModel = ViewModelProviders.of(this, viewModelFactory).get(AddTaskViewModel::class.java)
+                viewModel.task.observe(this.viewLifecycleOwner, object : Observer<TaskEntry?>{
+                    override fun onChanged(taskEntry: TaskEntry?) {
+                        viewModel.task.removeObserver(this)
+                        populateUI(taskEntry)
+                    }
+                })
             }
         }
 
@@ -69,7 +80,11 @@ class AddTaskFragment :Fragment(){
         return rootView
     }
 
-    private fun populateUI(task: TaskEntry) {
+    private fun populateUI(task: TaskEntry?) {
+        if (task == null)
+            return
+        mEditText.setText(task.description)
+        setPriorityInViews(task.priority)
 
     }
 
@@ -89,7 +104,13 @@ class AddTaskFragment :Fragment(){
         val task = TaskEntry(description, priority, date)
 
         AppExecutors.instance?.diskIO()!!.execute {
-            mDatabase.taskDao()?.insertTask(task)
+            if (mTaskId == DEFAULT_TASK_ID){
+                mDatabase.taskDao()?.insertTask(task)
+            }
+            else{
+                task.id = mTaskId
+                mDatabase.taskDao()?.updateTask(task)
+            }
             findNavController().popBackStack()
         }
 
@@ -105,5 +126,20 @@ class AddTaskFragment :Fragment(){
             R.id.radButton3 -> priority = PRIORITY_LOW
         }
         return priority
+    }
+
+
+    private fun setPriorityInViews(priority: Int) {
+        when (priority) {
+            PRIORITY_HIGH -> (view?.findViewById(R.id.radioGroup) as RadioGroup).check(
+                R.id.radButton1
+            )
+            PRIORITY_MEDIUM -> (view?.findViewById(R.id.radioGroup) as RadioGroup).check(
+                R.id.radButton2
+            )
+            PRIORITY_LOW -> (view?.findViewById(R.id.radioGroup) as RadioGroup).check(
+                R.id.radButton3
+            )
+        }
     }
 }

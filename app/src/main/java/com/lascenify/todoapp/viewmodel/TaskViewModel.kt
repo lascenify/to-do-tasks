@@ -11,4 +11,5 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
     val tasks : LiveData<List<TaskEntry>?> =
         AppDatabase.getInstance(application.applicationContext)?.taskDao()?.loadAllTasks()!!
 
+
 }

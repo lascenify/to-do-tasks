@@ -1,4 +1,4 @@
-package com.lascenify.todoapp.model
+package com.lascenify.todoapp.data
 
 import androidx.databinding.BaseObservable
 import androidx.room.ColumnInfo
@@ -9,7 +9,7 @@ import java.util.*
 @Entity (tableName = "task")
 data class TaskEntry(
     @PrimaryKey (autoGenerate = true)
-    val id: Int?,
+    var id: Int?,
     val description:String,
     val priority:Int,
     @ColumnInfo(name = "updated_at")
